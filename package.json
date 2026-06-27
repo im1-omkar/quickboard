@@ -25,5 +25,9 @@
     "packages/*"
   ],
   "module": "index.ts",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "quickboard": ".",
+    "zustand": "^5.0.14"
+  }
 }
