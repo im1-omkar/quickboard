@@ -27,6 +27,7 @@
   "module": "index.ts",
   "type": "module",
   "dependencies": {
+    "lucide-react": "^1.21.0",
     "quickboard": ".",
     "zustand": "^5.0.14"
   }

@@ -6,22 +6,19 @@ export default async function Page({
 }:{
     params:{id:number}
 }) {
-    const { id } = await params;
-
-    
 
     //fetch the given board's JSON getBoard(id) -- "api/boards/:boardId"
     const initialBoard:BoardState = {
         "id": "board_123",
         "title": "Architecture Diagram",
         "elements": [
-            { "id": "el_1", "type": "rectangle", "x": 100, "y": 100, "width": 50, "height": 50, "color": "#000", "strokeWidth": 1 }
+            { "id": "el_1", "type": "rectangle", "x": 100, "y": 100, "width": 200, "height": 300, "color": "#fff", "strokeWidth": 1}
         ],
         "appState":{
             "zoom": 1.0,
             "scrollX": 0,
             "scrollY": 0,
-            "backgroundColor": "#ffffff"
+            "backgroundColor": "#080807"
         }
     }
 

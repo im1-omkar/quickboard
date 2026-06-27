@@ -9,7 +9,7 @@ import {
     PointToPointElement
 } from "@repo/types";
 
-interface BoardStore {
+export interface BoardStore {
     
     id: string | null;
     title: string;
@@ -29,7 +29,7 @@ interface BoardStore {
 
     addElement: (element: CanvasElement) => void;
     
-    updateElement: (id: string, updates: Partial<BoundingBoxElement & PointToPointElement>) => void;
+    updateElement: (id: string, updates: Partial<BoundingBoxElement | PointToPointElement>) => void;
 }
 
 export const useBoardStore = create<BoardStore>((set) => ({
