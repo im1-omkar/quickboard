@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 
-export type ElementType = 'rectangle' | 'circle' | 'line' | 'arrow' | 'text';
+export type ElementType = 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | 'select';
 
 
 export type ActionState = 'idle' | 'drawing' | 'moving';
