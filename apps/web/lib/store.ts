@@ -1,50 +1,67 @@
-import { ActionState, CanvasElement, ElementType } from "@repo/types";
-import { create } from "zustand";
+import { create } from 'zustand';
+import {
+    ActionState,
+    ElementType,
+    CanvasElement,
+    BoardState,
+    AppState,
+    BoundingBoxElement,
+    PointToPointElement
+} from "@repo/types";
 
-interface BoardState {
+interface BoardStore {
     
+    id: string | null;
+    title: string;
     elements: CanvasElement[];
+    appState: AppState;
+
+    
     activeTool: ElementType;
     actionState: ActionState;
     selectedElementId: string | null;
 
     
+    initializeBoard: (initialData: BoardState) => void;
     setTool: (tool: ElementType) => void;
     setActionState: (state: ActionState) => void;
     setSelectedElement: (id: string | null) => void;
 
     addElement: (element: CanvasElement) => void;
-    updateElement: <T extends CanvasElement>(
-        id: string,
-        updates: Partial<T>
-    ) => void; }
-
-export const useBoardStore = create<BoardState>((set) => ({
     
+    updateElement: (id: string, updates: Partial<BoundingBoxElement & PointToPointElement>) => void;
+}
+
+export const useBoardStore = create<BoardStore>((set) => ({
+    
+    id: null,
+    title: "",
     elements: [],
-    activeTool: 'rectangle', 
+    appState: { zoom: 1, scrollX: 0, scrollY: 0, backgroundColor: "#ffffff" },
+
+    activeTool: 'rectangle',
     actionState: 'idle',
     selectedElementId: null,
 
     
+    initializeBoard: (initialData) => set({
+        id: initialData.id,
+        title: initialData.title,
+        elements: initialData.elements,
+        appState: initialData.appState
+    }),
+
     setTool: (tool) => set({ activeTool: tool }),
-    
     setActionState: (state) => set({ actionState: state }),
-    
     setSelectedElement: (id) => set({ selectedElementId: id }),
 
     addElement: (element) =>
-        set((state) => ({
-            elements: [...state.elements, element]
-        })),
+        set((state) => ({ elements: [...state.elements, element] })),
 
-    
     updateElement: (id, updates) =>
         set((state) => ({
             elements: state.elements.map((el) =>
-                el.id === id
-                    ? { ...el, ...updates } as CanvasElement
-                    : el
+                el.id === id ? { ...el, ...updates } as CanvasElement : el
             ),
         })),
 }));
