@@ -29,6 +29,7 @@
   "dependencies": {
     "lucide-react": "^1.21.0",
     "quickboard": ".",
+    "roughjs": "^4.6.6",
     "zustand": "^5.0.14"
   }
 }

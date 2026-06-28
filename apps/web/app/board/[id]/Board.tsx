@@ -1,20 +1,16 @@
-'use client'
+"use client"; 
 
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  BoardState
-} from "@repo/types";
+import rough from 'roughjs';
+import { BoardState } from "@repo/types";
 import { BoardStore, useBoardStore } from '@/lib/store';
 import {
   Square,
   Circle,
   Minus,
   MoveUpRight,
-  Type,
   MousePointer2
 } from "lucide-react";
-
-
 
 const isPointInElement = (x: number, y: number, element: any) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
@@ -24,7 +20,7 @@ const isPointInElement = (x: number, y: number, element: any) => {
     const maxY = Math.max(element.y, element.y + element.height);
     return x >= minX && x <= maxX && y >= minY && y <= maxY;
   }
-  
+
   if (element.type === 'line' || element.type === 'arrow') {
     const minX = Math.min(element.x, element.endX);
     const maxX = Math.max(element.x, element.endX);
@@ -32,6 +28,7 @@ const isPointInElement = (x: number, y: number, element: any) => {
     const maxY = Math.max(element.y, element.endY);
     return x >= minX - 5 && x <= maxX + 5 && y >= minY - 5 && y <= maxY + 5;
   }
+
   return false;
 };
 
@@ -39,7 +36,7 @@ const isPointOnHandle = (x: number, y: number, element: any) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
     const handleX = element.x + element.width;
     const handleY = element.y + element.height;
-    
+
     return Math.abs(x - handleX) <= 10 && Math.abs(y - handleY) <= 10;
   }
   return false;
@@ -48,7 +45,6 @@ const isPointOnHandle = (x: number, y: number, element: any) => {
 const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  
   const isResizing = useRef(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -62,7 +58,6 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
     useBoardStore.getState().initializeBoard(initialBoardState);
   }, [initialBoardState]);
 
-  
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -70,8 +65,6 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    
-    
     useBoardStore.setState({ elements: [...useBoardStore.getState().elements] });
 
     const handleResize = () => {
@@ -89,45 +82,64 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
+    const rc = rough.canvas(canvas);
+
     ctx.fillStyle = state.appState?.backgroundColor || "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     state.elements.forEach((element) => {
-      ctx.strokeStyle = element.color || "black";
-      ctx.lineWidth = element.strokeWidth || 2;
+      const roughOptions = {
+        stroke: element.color || "black",
+        strokeWidth: element.strokeWidth || 2,
+        roughness: 1.5,
+        bowing: 1,
+        seed: Number(element.id.slice(-6)) || 1,
+      };
 
-      
       if (element.type === 'rectangle') {
-        ctx.strokeRect(element.x, element.y, element.width, element.height);
+        rc.rectangle(element.x, element.y, element.width, element.height, roughOptions);
       } else if (element.type === 'circle') {
-        ctx.beginPath();
-        ctx.ellipse(
+        rc.ellipse(
           element.x + element.width / 2,
           element.y + element.height / 2,
-          Math.abs(element.width / 2),
-          Math.abs(element.height / 2),
-          0, 0, 2 * Math.PI
+          Math.abs(element.width),
+          Math.abs(element.height),
+          roughOptions
         );
-        ctx.stroke();
-      } else if (element.type === 'line' || element.type === 'arrow') {
-        ctx.beginPath();
-        ctx.moveTo(element.x, element.y);
-        ctx.lineTo(element.endX, element.endY);
-        ctx.stroke();
+      } else if (element.type === "line") {
+        rc.line(element.x, element.y, element.endX, element.endY, roughOptions);
+      } else if (element.type === "arrow") {
+        const headLength = 12;
+        const dx = element.endX - element.x;
+        const dy = element.endY - element.y;
+        const angle = Math.atan2(dy, dx);
+
+        rc.line(element.x, element.y, element.endX, element.endY, roughOptions);
+        rc.line(
+          element.endX,
+          element.endY,
+          element.endX - headLength * Math.cos(angle - Math.PI / 6),
+          element.endY - headLength * Math.sin(angle - Math.PI / 6),
+          roughOptions
+        );
+        rc.line(
+          element.endX,
+          element.endY,
+          element.endX - headLength * Math.cos(angle + Math.PI / 6),
+          element.endY - headLength * Math.sin(angle + Math.PI / 6),
+          roughOptions
+        );
       }
 
-      
       if (element.id === currentSelectedId) {
         ctx.strokeStyle = "#0b99ff";
         ctx.lineWidth = 1;
 
         if (element.type === 'rectangle' || element.type === 'circle') {
-          
           ctx.setLineDash([5, 5]);
           ctx.strokeRect(element.x - 4, element.y - 4, element.width + 8, element.height + 8);
           ctx.setLineDash([]);
 
-          
           ctx.fillStyle = "#ffffff";
           ctx.strokeStyle = "#0b99ff";
           ctx.lineWidth = 2;
@@ -139,43 +151,31 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
     });
   };
 
-  
-  
   useEffect(() => {
     draw(useBoardStore.getState(), selectedIdRef.current);
   }, [initialBoardState]);
 
-  
   useEffect(() => {
     selectedIdRef.current = selectedId;
     draw(useBoardStore.getState(), selectedId);
   }, [selectedId]);
 
-  
   useEffect(() => {
     const unsubscribe = useBoardStore.subscribe((state) => {
-      
       draw(state, selectedIdRef.current);
     });
 
     return () => unsubscribe();
   }, []);
 
-  
-
-  
-
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    /** logic of resizing /selection */
     const currentX = e.nativeEvent.offsetX;
     const currentY = e.nativeEvent.offsetY;
 
-    
     if (useBoardStore.getState().activeTool === 'select') {
       const elements = useBoardStore.getState().elements;
       let clickedOnElement = false;
 
-      
       if (selectedId) {
         const selectedEl = elements.find(el => el.id === selectedId);
         if (selectedEl && isPointOnHandle(currentX, currentY, selectedEl)) {
@@ -186,7 +186,6 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
         }
       }
 
-      
       for (let i = elements.length - 1; i >= 0; i--) {
         if (isPointInElement(currentX, currentY, elements[i])) {
           setSelectedId(elements[i].id);
@@ -195,7 +194,6 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
         }
       }
 
-      
       if (!clickedOnElement) setSelectedId(null);
       return;
     }
@@ -204,8 +202,6 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
     const id = Date.now().toString();
 
     isDrawing.current = true;
-
-    
     const startX = e.nativeEvent.offsetX;
     const startY = e.nativeEvent.offsetY;
 
@@ -222,7 +218,7 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
         y: startY,
         width: 0,
         height: 0,
-        color: "#606060", 
+        color: store.color,
         strokeWidth: 2
       });
     } else if (store.activeTool === 'line' || store.activeTool === 'arrow') {
@@ -233,7 +229,7 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
         y: startY,
         endX: startX,
         endY: startY,
-        color: "#606060", 
+        color: store.color,
         strokeWidth: 2
       });
     }
@@ -245,17 +241,15 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
     const canvas = canvasRef.current;
     const store = useBoardStore.getState();
 
-    
     if (canvas) {
       if (store.activeTool === 'select') {
         const selectedEl = selectedId ? store.elements.find(el => el.id === selectedId) : null;
 
         if (isResizing.current) {
-          canvas.style.cursor = 'nwse-resize'; 
+          canvas.style.cursor = 'nwse-resize';
         } else if (selectedEl && isPointOnHandle(currentX, currentY, selectedEl)) {
-          canvas.style.cursor = 'nwse-resize'; 
+          canvas.style.cursor = 'nwse-resize';
         } else {
-          
           let isHoveringShape = false;
           for (let i = store.elements.length - 1; i >= 0; i--) {
             if (isPointInElement(currentX, currentY, store.elements[i])) {
@@ -266,11 +260,10 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
           canvas.style.cursor = isHoveringShape ? 'move' : 'default';
         }
       } else {
-        canvas.style.cursor = 'crosshair'; 
+        canvas.style.cursor = 'crosshair';
       }
     }
 
-    
     if (isResizing.current && currentElementId.current && store.activeTool === 'select') {
       const element = store.elements.find(el => el.id === currentElementId.current);
       if (element && (element.type === 'rectangle' || element.type === 'circle')) {
@@ -282,7 +275,6 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
       return;
     }
 
-    
     if (!isDrawing.current || !currentElementId.current) return;
 
     if (store.activeTool === 'rectangle' || store.activeTool === 'circle') {
@@ -306,65 +298,41 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
   };
 
   return (
-    <div className="relative w-screen h-screen">
+    <div className="relative w-screen h-screen overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="w-screen h-screen touch-none border border-gray-200"
+        className="w-screen h-screen touch-none border"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       />
+
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 rounded-2xl bg-zinc-900 p-2 shadow-xl border border-zinc-700">
         <button onClick={() => { useBoardStore.getState().setTool('rectangle') }} className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-zinc-800 transition">
           <Square size={20} className="text-white" />
         </button>
-
         <button onClick={() => { useBoardStore.getState().setTool('circle') }} className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-zinc-800 transition">
           <Circle size={20} className="text-white" />
         </button>
-
         <button onClick={() => { useBoardStore.getState().setTool('line') }} className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-zinc-800 transition">
           <Minus size={20} className="text-white" />
         </button>
-
         <button onClick={() => { useBoardStore.getState().setTool('arrow') }} className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-zinc-800 transition">
           <MoveUpRight size={20} className="text-white" />
         </button>
-
-        <button onClick={() => { useBoardStore.getState().setTool('text') }} className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-zinc-800 transition">
-          <Type size={20} className="text-white" />
-        </button>
-
         <button onClick={() => { useBoardStore.getState().setTool('select') }} className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-zinc-800 transition">
           <MousePointer2 size={20} className="text-white" />
         </button>
       </div>
+
       <div className="absolute top-4 left-24 z-10 flex items-center gap-2 rounded-2xl bg-zinc-900 p-2 shadow-xl border border-zinc-700">
-        <button
-          className="h-8 w-8 rounded-full bg-white border border-zinc-500 hover:scale-110 transition"
-          title="White"
-        />
-        <button
-          className="h-8 w-8 rounded-full bg-red-500 hover:scale-110 transition"
-          title="Red"
-        />
-        <button
-          className="h-8 w-8 rounded-full bg-blue-500 hover:scale-110 transition"
-          title="Blue"
-        />
-        <button
-          className="h-8 w-8 rounded-full bg-green-500 hover:scale-110 transition"
-          title="Green"
-        />
-        <button
-          className="h-8 w-8 rounded-full bg-yellow-400 hover:scale-110 transition"
-          title="Yellow"
-        />
-        <button
-          className="h-8 w-8 rounded-full bg-violet-500 hover:scale-110 transition"
-          title="Purple"
-        />
+        <button onClick={() => { useBoardStore.getState().setColor('#d9d9d9') }} className="h-8 w-8 rounded-full bg-white border border-zinc-500 hover:scale-110 transition" title="White" />
+        <button onClick={() => { useBoardStore.getState().setColor('#e83a3a') }} className="h-8 w-8 rounded-full bg-red-500 hover:scale-110 transition" title="Red" />
+        <button onClick={() => { useBoardStore.getState().setColor('#4655b8') }} className="h-8 w-8 rounded-full bg-blue-500 hover:scale-110 transition" title="Blue" />
+        <button onClick={() => { useBoardStore.getState().setColor('#48bf3b') }} className="h-8 w-8 rounded-full bg-green-500 hover:scale-110 transition" title="Green" />
+        <button onClick={() => { useBoardStore.getState().setColor('#c9b726') }} className="h-8 w-8 rounded-full bg-yellow-400 hover:scale-110 transition" title="Yellow" />
+        <button onClick={() => { useBoardStore.getState().setColor('#8a3b83') }} className="h-8 w-8 rounded-full bg-violet-500 hover:scale-110 transition" title="Purple" />
       </div>
     </div>
   )

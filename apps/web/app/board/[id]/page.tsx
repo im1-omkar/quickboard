@@ -12,7 +12,7 @@ export default async function Page({
         "id": "board_123",
         "title": "Architecture Diagram",
         "elements": [
-            { "id": "el_1", "type": "rectangle", "x": 100, "y": 100, "width": 200, "height": 300, "color": "#fff", "strokeWidth": 1}
+            
         ],
         "appState":{
             "zoom": 1.0,

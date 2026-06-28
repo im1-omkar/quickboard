@@ -15,6 +15,7 @@ export interface BoardStore {
     title: string;
     elements: CanvasElement[];
     appState: AppState;
+    color : string;
 
     
     activeTool: ElementType;
@@ -27,6 +28,8 @@ export interface BoardStore {
     setActionState: (state: ActionState) => void;
     setSelectedElement: (id: string | null) => void;
 
+    setColor : (color:string) => void;
+
     addElement: (element: CanvasElement) => void;
     
     updateElement: (id: string, updates: Partial<BoundingBoxElement | PointToPointElement>) => void;
@@ -38,6 +41,7 @@ export const useBoardStore = create<BoardStore>((set) => ({
     title: "",
     elements: [],
     appState: { zoom: 1, scrollX: 0, scrollY: 0, backgroundColor: "#ffffff" },
+    color:'#d9d9d9',
 
     activeTool: 'rectangle',
     actionState: 'idle',
@@ -54,6 +58,8 @@ export const useBoardStore = create<BoardStore>((set) => ({
     setTool: (tool) => set({ activeTool: tool }),
     setActionState: (state) => set({ actionState: state }),
     setSelectedElement: (id) => set({ selectedElementId: id }),
+
+    setColor: (color:string) => {set({color:color})},
 
     addElement: (element) =>
         set((state) => ({ elements: [...state.elements, element] })),

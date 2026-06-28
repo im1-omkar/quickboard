@@ -7,6 +7,7 @@ export type ElementType = 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | '
 export type ActionState = 'idle' | 'drawing' | 'moving';
 
 
+
 export interface BaseElement {
     id: string;
     type: ElementType;
