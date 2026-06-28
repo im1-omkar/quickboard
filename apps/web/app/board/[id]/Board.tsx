@@ -2,17 +2,18 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import rough from 'roughjs';
-import { BoardState } from "@repo/types";
+import { BoardState, CanvasElement } from "@repo/types";
 import { BoardStore, useBoardStore } from '@/lib/store';
 import {
   Square,
   Circle,
   Minus,
   MoveUpRight,
-  MousePointer2
+  MousePointer2,
+  CloudSync
 } from "lucide-react";
 
-const isPointInElement = (x: number, y: number, element: any) => {
+const isPointInElement = (x: number, y: number, element: CanvasElement) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
     const minX = Math.min(element.x, element.x + element.width);
     const maxX = Math.max(element.x, element.x + element.width);
@@ -32,7 +33,7 @@ const isPointInElement = (x: number, y: number, element: any) => {
   return false;
 };
 
-const isPointOnHandle = (x: number, y: number, element: any) => {
+const isPointOnHandle = (x: number, y: number, element: CanvasElement) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
     const handleX = element.x + element.width;
     const handleY = element.y + element.height;
@@ -53,6 +54,7 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
   const currentElementId = useRef<string | null>(null);
 
   const selectedIdRef = useRef<string | null>(null);
+
 
   useEffect(() => {
     useBoardStore.getState().initializeBoard(initialBoardState);
@@ -333,6 +335,9 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
         <button onClick={() => { useBoardStore.getState().setColor('#48bf3b') }} className="h-8 w-8 rounded-full bg-green-500 hover:scale-110 transition" title="Green" />
         <button onClick={() => { useBoardStore.getState().setColor('#c9b726') }} className="h-8 w-8 rounded-full bg-yellow-400 hover:scale-110 transition" title="Yellow" />
         <button onClick={() => { useBoardStore.getState().setColor('#8a3b83') }} className="h-8 w-8 rounded-full bg-violet-500 hover:scale-110 transition" title="Purple" />
+      </div>
+      <div className="absolute top-4 right-24 z-10 flex items-center gap-2 rounded-2xl bg-zinc-100 p-2 shadow-xl border border-zinc-700">
+        <CloudSync/>Sync
       </div>
     </div>
   )
