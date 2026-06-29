@@ -47,3 +47,19 @@ export const handleSignUp = async (email: string, password: string, nickName:str
 
 }
 
+export const handleAddTitle = async(title:string)=>{
+    try{
+        const response = await axios.post("http://localhost:3000/api/boards",{
+            title
+        },{
+            headers:{
+                Authorization:`Bearer ${localStorage.getItem('token')}`
+            }
+        })
+    }
+    catch(err){
+        if(err instanceof Error){
+            console.log(err.message)
+        }
+    }
+}

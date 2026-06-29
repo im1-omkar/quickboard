@@ -3,10 +3,10 @@ import { prisma } from "@repo/db";
 
 const boardsRouter = express.Router();
 
-// 1. Create a new board
+
 boardsRouter.post("/", async (req: any, res: any) => {
     const { title } = req.body;
-    const { userId } = req.user; // Set by your auth middleware
+    const { userId } = req.user; 
 
     const board = await prisma.board.create({
         data: {
@@ -17,7 +17,7 @@ boardsRouter.post("/", async (req: any, res: any) => {
     res.status(201).json(board);
 });
 
-// 2. Get all boards for the logged-in user
+
 boardsRouter.get("/", async (req: any, res: any) => {
     const { userId } = req.user;
 
@@ -25,7 +25,7 @@ boardsRouter.get("/", async (req: any, res: any) => {
     res.json(boards);
 });
 
-// 3. Get a specific board by ID
+
 boardsRouter.get("/:boardId", async (req: any, res: any) => {
     const { boardId } = req.params;
     const { userId } = req.user;
@@ -41,7 +41,7 @@ boardsRouter.get("/:boardId", async (req: any, res: any) => {
     res.json(board);
 });
 
-// 4. Sync board state (Viewport + Elements)
+
 boardsRouter.post("/:boardId/sync", async (req: any, res: any) => {
     const { boardId } = req.params;
     const { userId } = req.user;

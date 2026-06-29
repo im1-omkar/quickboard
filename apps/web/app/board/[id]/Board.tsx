@@ -56,9 +56,7 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
   const selectedIdRef = useRef<string | null>(null);
 
 
-  useEffect(() => {
-    useBoardStore.getState().initializeBoard(initialBoardState);
-  }, [initialBoardState]);
+  
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -152,10 +150,12 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
       }
     });
   };
-
+  
   useEffect(() => {
+    useBoardStore.getState().initializeBoard(initialBoardState);
     draw(useBoardStore.getState(), selectedIdRef.current);
   }, [initialBoardState]);
+
 
   useEffect(() => {
     selectedIdRef.current = selectedId;
