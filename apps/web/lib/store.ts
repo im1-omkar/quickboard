@@ -40,7 +40,7 @@ export const useBoardStore = create<BoardStore>((set) => ({
     id: null,
     title: "",
     elements: [],
-    appState: { zoom: 1, scrollX: 0, scrollY: 0, backgroundColor: "#ffffff" },
+    appState: { zoom: 1, scrollX: 0, scrollY: 0, backgroundColor: "#0D0C0C" },
     color:'#d9d9d9',
 
     activeTool: 'rectangle',

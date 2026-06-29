@@ -12,6 +12,8 @@ import {
   MousePointer2,
   CloudSync
 } from "lucide-react";
+import axios from 'axios';
+import { useParams } from 'next/navigation';
 
 const isPointInElement = (x: number, y: number, element: CanvasElement) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
@@ -43,7 +45,7 @@ const isPointOnHandle = (x: number, y: number, element: CanvasElement) => {
   return false;
 };
 
-const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
+const Board = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const isResizing = useRef(false);
@@ -54,7 +56,7 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
   const currentElementId = useRef<string | null>(null);
 
   const selectedIdRef = useRef<string | null>(null);
-
+  const params = useParams();
 
   
 
@@ -152,9 +154,18 @@ const Board = ({ initialBoardState }: { initialBoardState: BoardState }) => {
   };
   
   useEffect(() => {
-    useBoardStore.getState().initializeBoard(initialBoardState);
-    draw(useBoardStore.getState(), selectedIdRef.current);
-  }, [initialBoardState]);
+      const fetchIntiialBoard = async ()=>{
+        const response = await axios.get(`http://localhost:3000/api/boards/${params.id}`,{
+          headers:{
+            Authorization:`Bearer ${localStorage.getItem("token")}`
+          }
+        })
+        const initialBoard = response.data;
+        
+      }
+
+      fetchIntiialBoard()
+  }, []);
 
 
   useEffect(() => {

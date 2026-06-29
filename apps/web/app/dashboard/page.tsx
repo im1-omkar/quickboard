@@ -35,10 +35,11 @@ const Dashboard = () => {
   const [title, setTitle] = useState('')
   const queryClient = useQueryClient()
 
+
   const boards = useQuery({
     queryKey: ['dashboard'],
     queryFn: async () => {
-      const response = await axios.get("http://localhost:3000/api/boards", {
+      const response = await axios.get(`http://localhost:3000/api/boards`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -107,6 +108,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 gap-8 p-10 sm:grid-cols-3 lg:grid-cols-4">
               {boards.data?.map((board: Board, i: number) => (
                 <div
+                  onClick={()=>{router.push(`/board/${board.id}`)}}
                   key={board.id}
                   style={{ '--tilt': `${getJitter(i)}deg` } as React.CSSProperties}
                   className="excal-card excal-card-fill flex h-48 w-48 items-center justify-center p-3 text-center"
