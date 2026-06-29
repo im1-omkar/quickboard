@@ -3,7 +3,7 @@ import { prisma } from "@repo/db";
 import jwt from "jsonwebtoken";
 
 const authRouter = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET || 'somethingGibrish'
 
 
 authRouter.post('/signup', async (req: express.Request, res: express.Response) => {

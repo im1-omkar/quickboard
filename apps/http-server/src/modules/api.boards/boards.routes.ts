@@ -21,9 +21,7 @@ boardsRouter.post("/", async (req: any, res: any) => {
 boardsRouter.get("/", async (req: any, res: any) => {
     const { userId } = req.user;
 
-    const boards = await prisma.board.findMany({
-        where: { ownerId: userId }
-    });
+    const boards = await prisma.board.findMany();
     res.json(boards);
 });
 

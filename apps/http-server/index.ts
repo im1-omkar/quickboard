@@ -16,4 +16,3 @@ app.use("/api/boards",authMiddleware,boardsRouter)
 app.listen(3000,()=>{
     console.log("server is running on PORT : 3000" )
 })
-

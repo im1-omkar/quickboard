@@ -27,6 +27,7 @@
   "module": "index.ts",
   "type": "module",
   "dependencies": {
+    "axios": "^1.18.1",
     "lucide-react": "^1.21.0",
     "quickboard": ".",
     "roughjs": "^4.6.6",
