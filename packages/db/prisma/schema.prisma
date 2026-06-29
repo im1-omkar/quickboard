@@ -37,7 +37,7 @@ model Board {
   zoom            Float    @default(1.0)
   scrollX         Float    @default(0.0)
   scrollY         Float    @default(0.0)
-  backgroundColor String   @default("#ffffff")
+  backgroundColor String   @default("#0D0C0C")
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

@@ -83,7 +83,7 @@ const Dashboard = () => {
               >
                 <div
                   onClick={(e) => { e.stopPropagation() }}
-                  className="excal-modal flex h-80 w-[30rem] flex-col items-center justify-center gap-3 p-6"
+                  className="excal-modal flex h-80 w-120 flex-col items-center justify-center gap-3 p-6"
                 >
                   <div className="excal-title text-2xl">add a board</div>
                   <input

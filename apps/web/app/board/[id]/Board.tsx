@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import rough from 'roughjs';
-import { BoardState, CanvasElement } from "@repo/types";
+import {  CanvasElement } from "@repo/types";
 import { BoardStore, useBoardStore } from '@/lib/store';
 import {
   Square,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import axios from 'axios';
 import { useParams } from 'next/navigation';
+import { handleSync } from '@/lib/api';
 
 const isPointInElement = (x: number, y: number, element: CanvasElement) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
@@ -57,8 +58,35 @@ const Board = () => {
 
   const selectedIdRef = useRef<string | null>(null);
   const params = useParams();
+  const initializeBoard = useBoardStore((state) => state.initializeBoard)
 
-  
+
+  useEffect(() => {
+    const fetchIntiialBoard = async () => {
+      const response = await axios.get(`http://localhost:3000/api/boards/${params.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      const initialBoard = response.data;
+
+
+      initializeBoard({
+        id: initialBoard.id,
+        title: initialBoard.title,
+        elements: initialBoard.elements,
+        appState: {
+          zoom: initialBoard.zoom,
+          scrollX: initialBoard.scrollX,
+          scrollY: initialBoard.scrollY,
+          backgroundColor: initialBoard.backgroundColor
+        }
+      })
+
+    }
+
+    fetchIntiialBoard()
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -153,19 +181,7 @@ const Board = () => {
     });
   };
   
-  useEffect(() => {
-      const fetchIntiialBoard = async ()=>{
-        const response = await axios.get(`http://localhost:3000/api/boards/${params.id}`,{
-          headers:{
-            Authorization:`Bearer ${localStorage.getItem("token")}`
-          }
-        })
-        const initialBoard = response.data;
-        
-      }
-
-      fetchIntiialBoard()
-  }, []);
+  
 
 
   useEffect(() => {
@@ -347,8 +363,8 @@ const Board = () => {
         <button onClick={() => { useBoardStore.getState().setColor('#c9b726') }} className="h-8 w-8 rounded-full bg-yellow-400 hover:scale-110 transition" title="Yellow" />
         <button onClick={() => { useBoardStore.getState().setColor('#8a3b83') }} className="h-8 w-8 rounded-full bg-violet-500 hover:scale-110 transition" title="Purple" />
       </div>
-      <div className="absolute top-4 right-24 z-10 flex items-center gap-2 rounded-2xl bg-zinc-100 p-2 shadow-xl border border-zinc-700">
-        <CloudSync/>Sync
+      <div onClick={handleSync} className="absolute top-4 right-24 z-10 flex items-center gap-2 rounded-2xl bg-zinc-100 p-2 shadow-xl border border-zinc-700">
+        <CloudSync/>syncmore
       </div>
     </div>
   )
