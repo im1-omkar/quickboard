@@ -60,7 +60,6 @@ boardsRouter.post("/:boardId/sync", async (req: any, res: any) => {
         const updatedBoard = await prisma.board.updateMany({
             where: {
                 id: boardId,
-                ownerId: userId
             },
             data: {
                 elements,
@@ -70,6 +69,7 @@ boardsRouter.post("/:boardId/sync", async (req: any, res: any) => {
                 backgroundColor
             }
         });
+
 
         if (updatedBoard.count === 0) {
             return res.status(404).json({ message: "Board not found or unauthorized" });

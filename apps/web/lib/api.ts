@@ -1,6 +1,5 @@
 'use client'
 import axios from "axios"
-import type { CanvasElement } from "@repo/types"
 import { useBoardStore } from "./store"
 
 export const handleSignIn = async(email:string,password:string)=>{

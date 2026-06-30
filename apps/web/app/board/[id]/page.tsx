@@ -1,8 +1,11 @@
+'use client'
+import { useEffect } from "react";
 import Board from "./Board";
 import AuthProtection from "@/components/authProtection";
 
 
-export default async function Page() {
+export default  function Page() {
+
    
     return <AuthProtection>
         <Board ></Board>

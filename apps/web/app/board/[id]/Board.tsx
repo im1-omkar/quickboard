@@ -60,6 +60,7 @@ const Board = () => {
   const params = useParams();
   const initializeBoard = useBoardStore((state) => state.initializeBoard)
 
+  
 
   useEffect(() => {
     const fetchIntiialBoard = async () => {
