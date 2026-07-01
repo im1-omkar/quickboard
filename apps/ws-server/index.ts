@@ -1,69 +1,143 @@
-import {WebSocketServer} from "ws";
-import jwt from "jsonwebtoken"
+import { WebSocketServer, WebSocket } from "ws";
+import jwt from "jsonwebtoken";
 
-const wss = new WebSocketServer({port:8080});
+//add pint pong heartbeats :)
+
+const wss = new WebSocketServer({ port: 8080 });
 
 interface UserInterface {
-    userId: string,
-    roomId : string,
-    ws : WebSocket
+    userId: string;
+    roomId: string;
+    ws: WebSocket;
 }
-
 
 interface RoomInterface {
-    roomId : string,
-    sockets : WebSocket[]
+    roomId: string;
+    sockets: WebSocket[];
 }
 
-const rooms : RoomInterface[] =[]
-const users : UserInterface[] = []
+const rooms: RoomInterface[] = [];
+const users: UserInterface[] = [];
 
+wss.on('connection', (ws, req) => {
+    const url = new URL(req.url!, "http://localhost:");
 
-wss.on('connection', (ws,req)=>{
-    const url = new URL(req.url!, "http://localhost");
-
-    const authHeader = req.headers["authorization"];
+    const token = req.headers["sec-websocket-protocol"];
     const boardId = url.searchParams.get("boardId");
+    const JWT_SECRET = process.env.JWT_SECRET;
+
     
-    
-    const token = authHeader?.split(' ')[1]
-    const JWT_SECRET = process.env.JWT_SECRET
-    
-    
-    if(!token || !JWT_SECRET) {
-        ws.close();
+
+    if (!JWT_SECRET) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Server configuration error: JWT_SECRET is missing.' }));
+        ws.close(1011, 'Server Error'); 
         return;
-    };
+    }
 
-    try{
-        const decoded:{
-            userId:string,
-            email:string,
-            iat:number,
-            exp:number
-        } = jwt.verify(token, JWT_SECRET);
+    if (!token) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Authentication failed: No token provided in Authorization header.' }));
+        ws.close(1008, 'Policy Violation: Missing Token'); 
+        return;
+    }
 
-        users.forEach((user:UserInterface)=>{
-            if(user.userId == decoded.userId){
-                
+    if (!boardId) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Connection failed: Missing boardId in connection URL.' }));
+        ws.close(1008, 'Policy Violation: Missing BoardId');
+        return;
+    }
+
+    let userId: string;
+
+    try {
+        
+        const decoded = jwt.verify(token, JWT_SECRET) as {
+            userId: string;
+            email: string;
+            iat: number;
+            exp: number;
+        };
+        userId = decoded.userId;
+
+        
+        const existingUser = users.find((user) => user.userId === userId);
+        if (existingUser) {
+            existingUser.roomId = boardId;
+            existingUser.ws = ws;
+        } else {
+            users.push({
+                userId: userId,
+                roomId: boardId,
+                ws: ws
+            });
+        }
+
+        
+        const existingRoom = rooms.find((room) => room.roomId === boardId);
+        if (existingRoom) {
+            existingRoom.sockets.push(ws);
+        } else {
+            rooms.push({
+                roomId: boardId,
+                sockets: [ws]
+            });
+        }
+
+    } catch (err) {
+        
+        let errorMessage = "Authentication failed: Invalid or expired token.";
+
+        if (err instanceof Error) {
+            errorMessage = `Authentication failed: ${err.message}`;
+            console.log("JWT Error:", err.message);
+        }
+
+        ws.send(JSON.stringify({ type: 'error', message: errorMessage }));
+        ws.close(1008, 'Policy Violation: Invalid Token');
+        return;
+    }
+
+    
+    ws.on('message', (data) => {
+        try {
+            const mssg = JSON.parse(data.toString());
+
+            if (mssg.type === 'sync') {
+                const room = rooms.find((r) => r.roomId === boardId);
+
+                if (room) {
+                    room.sockets.forEach((clientWs) => {
+                        if (clientWs !== ws && clientWs.readyState === WebSocket.OPEN) {
+                            clientWs.send(JSON.stringify(mssg));
+                        }
+                    });
+                }
             }
-        })
-    }
-    catch(err){
-        if(err instanceof Error){
-            console.log(err.message)
+        } catch (error) {
+            console.log("Failed to parse message:", error);
+            ws.send(JSON.stringify({ type: 'error', message: 'Invalid JSON message format.' }));
         }
-        console.log("error")
-    }
+    });
 
+    
+    ws.on('close', () => {
+        const roomIndex = rooms.findIndex((r) => r.roomId === boardId);
 
-    ws.on('message',(data)=>{
-        const mssg = JSON.parse(data.toString());
+        if (roomIndex !== -1) {
+            if (!rooms[roomIndex]) return;
 
-        if(mssg.type == 'sync'){
-            //broadcast to all the user of that BoardId
+            rooms[roomIndex].sockets = rooms[roomIndex].sockets.filter((s) => s !== ws);
+
+            if (rooms[roomIndex].sockets.length === 0) {
+                rooms.splice(roomIndex, 1);
+            }
         }
-    })
 
-    ws.send('client connected to server')
-})
+        const userIndex = users.findIndex((u) => u.ws === ws);
+        if (userIndex !== -1) {
+            users.splice(userIndex, 1);
+        }
+    });
+
+    
+    ws.send(JSON.stringify({ type: 'success', message: `Client connected to server successfully ${boardId}` }));
+});
