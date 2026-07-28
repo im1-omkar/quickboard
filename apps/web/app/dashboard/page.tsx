@@ -38,17 +38,31 @@ const Dashboard = () => {
 
   const boards = useQuery({
     queryKey: ['dashboard'],
-    queryFn: async () => {
-      const response = await axios.get(`http://localhost:3000/api/boards`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+    queryFn: async (): Promise<Board[] | null> => {
+      try {
+        // Pass the Board[] type to axios so response.data is strongly typed
+        const response = await axios.get<Board[]>(`http://localhost:3000/api/boards`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        setVerified(true);
+        return response.data;
+
+      } catch (error) {
+        // This type guard tells TS that "error" is specifically an AxiosError
+        if (axios.isAxiosError(error)) {
+          if (error.response && (error.response.status === 403 || error.response.status === 401)) {
+            localStorage.removeItem("token");
+            router.replace('/');
+            return null; // Return null to satisfy the Promise<Board[] | null> return type
+          }
         }
-      })
-      if (response.status === 403 || response.status === 401) {
-        router.push('/')
+
+        // If it's not an Axios error, or not a 401/403, throw it to React Query
+        throw error;
       }
-      setVerified(true);
-      return response.data
     }
   });
 
