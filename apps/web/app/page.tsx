@@ -2,10 +2,14 @@
 import { handleSignIn, handleSignUp } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const [isSignupLoading, setIsSignupLoading] = useState(false);
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -119,9 +123,15 @@ export default function Home() {
               ✕
             </button>
 
+            {
+              isSignupLoading ? <Button className="text-center" disabled size="lg">
+                <Spinner data-icon="inline-start" />
+                signing up...
+              </Button> :
             <h2 className="excal-title mb-6 text-center text-2xl">
               {isLogin ? "sign in" : "create account"}
             </h2>
+            }
 
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
               {!isLogin && (
@@ -147,13 +157,17 @@ export default function Home() {
               <button
                 onClick={async () => {
                   if (isLogin) {
+                    
                     const response: boolean = await handleSignIn(email, password)
+                    
                     if (response) {
                       router.replace('/dashboard')
                     }
                   }
                   else {
-                    handleSignUp(email, password, nickName)
+                    setIsSignupLoading(true);
+                    await handleSignUp(email, password, nickName);
+                    setIsSignupLoading(false);
                   }
                 }}
                 type="submit"

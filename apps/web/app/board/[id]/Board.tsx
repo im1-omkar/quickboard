@@ -15,6 +15,8 @@ import {
 import axios from 'axios';
 import { useParams } from 'next/navigation';
 import { handleSync } from '@/lib/api';
+import { makeWebSocketConnection, sendCurrentState } from '@/lib/websocket';
+import { Spinner } from '@/components/ui/spinner';
 
 const isPointInElement = (x: number, y: number, element: CanvasElement) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
@@ -60,7 +62,11 @@ const Board = () => {
   const params = useParams();
   const initializeBoard = useBoardStore((state) => state.initializeBoard)
 
-  
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  useEffect(()=>{
+    makeWebSocketConnection();
+  })
 
   useEffect(() => {
     const fetchIntiialBoard = async () => {
@@ -306,6 +312,7 @@ const Board = () => {
     }
 
     if (!isDrawing.current || !currentElementId.current) return;
+    sendCurrentState()
 
     if (store.activeTool === 'rectangle' || store.activeTool === 'circle') {
       store.updateElement(currentElementId.current, {
@@ -326,6 +333,12 @@ const Board = () => {
     useBoardStore.getState().setActionState('idle');
     isResizing.current = false;
   };
+
+  const handleSyncFunc = async ()=>{
+    setIsSyncing(true)
+    await handleSync();
+    setIsSyncing(false)
+  }
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
@@ -364,8 +377,10 @@ const Board = () => {
         <button onClick={() => { useBoardStore.getState().setColor('#c9b726') }} className="h-8 w-8 rounded-full bg-yellow-400 hover:scale-110 transition" title="Yellow" />
         <button onClick={() => { useBoardStore.getState().setColor('#8a3b83') }} className="h-8 w-8 rounded-full bg-violet-500 hover:scale-110 transition" title="Purple" />
       </div>
-      <div onClick={handleSync} className="absolute top-4 right-24 z-10 flex items-center gap-2 rounded-2xl bg-zinc-100 p-2 shadow-xl border border-zinc-700">
-        <CloudSync/>syncmore
+      <div onClick={handleSyncFunc} className="absolute top-4 right-24 z-10 flex items-center gap-2 rounded-2xl bg-zinc-100 p-2 shadow-xl border border-zinc-700">
+        {
+          isSyncing ? <Spinner/> : <CloudSync />
+        }sync
       </div>
     </div>
   )

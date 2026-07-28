@@ -1,6 +1,7 @@
 'use client'
 import axios from "axios"
 import { useBoardStore } from "./store"
+import toast from "react-hot-toast"
 
 export const handleSignIn = async(email:string,password:string)=>{
 
@@ -14,6 +15,7 @@ export const handleSignIn = async(email:string,password:string)=>{
 
         if(response.status === 200){
             localStorage.setItem('token', response.data.token)
+            toast.success("Sign In Successful! redirecting...")
             return true;
         }
 
@@ -23,6 +25,7 @@ export const handleSignIn = async(email:string,password:string)=>{
         if(err instanceof Error){
             console.log("error while signinin in ")
         }
+        toast.error("error while Signining In")
         return false;
     }
 
@@ -37,13 +40,15 @@ export const handleSignUp = async (email: string, password: string, nickName:str
             password,
             nickName
         })
+        toast.success('Sign Up successful!');
 
 
     } catch (err) {
         if (err instanceof Error) {
-            console.log("error while signinin in ")
+            console.log("error while signinin up ")
         }
-        return false
+        toast.error("Error while Signing Up")
+        return false;
     }
 
 }
