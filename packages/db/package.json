@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
+    "typescript":"^5.9.2",
     "@types/bun": "latest",
     "@types/node": "^26.0.1",
     "prisma": "6.19"
@@ -11,8 +12,9 @@
   "exports": {
     ".":"./index.ts"
   },
-  "peerDependencies": {
-    "typescript": "^5"
+  "scripts": {
+    "generate":"prisma generate",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "6.19",

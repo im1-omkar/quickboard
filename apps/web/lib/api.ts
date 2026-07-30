@@ -3,13 +3,15 @@ import axios from "axios"
 import { useBoardStore } from "./store"
 import toast from "react-hot-toast"
 
+const HTTP_URL = process.env.NEXT_PUBLIC_HTTP_URL;
+
 export const handleSignIn = async(email:string,password:string)=>{
 
 
     try{
 
-        const response = await axios.post("http://localhost:3000/api/auth/signin",{
-            email,
+        const response = await axios.post(`${HTTP_URL}/api/auth/signin`,{
+            email,  
             password
         })
 
@@ -35,7 +37,7 @@ export const handleSignUp = async (email: string, password: string, nickName:str
 
     try {
 
-        const response = await axios.post("http://localhost:3000/api/auth/signup",{
+        await axios.post(`${HTTP_URL}/api/auth/signup`,{
             email,
             password,
             nickName
@@ -55,7 +57,7 @@ export const handleSignUp = async (email: string, password: string, nickName:str
 
 export const handleAddTitle = async(title:string)=>{
     try{
-        const response = await axios.post("http://localhost:3000/api/boards",{
+        await axios.post(`${HTTP_URL}/api/boards`,{
             title
         },{
             headers:{
@@ -81,7 +83,7 @@ export const handleSync = async()=>{
     const backgroundColor = useBoardStore.getState().appState.backgroundColor;
 
     try{
-        const response = await axios.post(`http://localhost:3000/api/boards/${boardId}/sync`,{
+        const response = await axios.post(`${HTTP_URL}/api/boards/${boardId}/sync`,{
             elements,
             zoom,
             scrollX,

@@ -6,6 +6,8 @@ let socket : null | WebSocket= null
 let lastSendTime : number = 0;
 const THROTTLE_MS = 50;
 
+const WS_URL =  process.env.NEXT_PUBLIC_WS_URL;
+
 interface Message {
     type:string,
     currentState:BoardState
@@ -13,7 +15,7 @@ interface Message {
 
 export const makeWebSocketConnection = async()=>{
 
-    socket = new WebSocket("ws://localhost:8080?boardId"+"="+useBoardStore.getState().id, localStorage.getItem("token")!)
+    socket = new WebSocket(`${WS_URL}?boardId`+"="+useBoardStore.getState().id, localStorage.getItem("token")!)
 
     socket.addEventListener('message',(event)=>{
         const message:Message = JSON.parse(event.data);

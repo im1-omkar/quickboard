@@ -1,9 +1,29 @@
 import { WebSocketServer, WebSocket } from "ws";
 import jwt from "jsonwebtoken";
+import http from "http";
 
 //add pint pong heartbeats :)
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = Number(process.env.PORT) || 8080;
+const server = http.createServer();
+
+const wss = new WebSocketServer({
+    noServer: true,
+});
+
+server.on("upgrade",(request,socket, head)=>{
+    const origin = request.headers.origin;
+
+    if(origin !== process.env.FRONTEND_URL){
+        socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+        socket.destroy();
+        return;
+    }
+
+    wss.handleUpgrade(request,socket,head, (ws)=>{
+        wss.emit("connection", ws, request);
+    });
+})
 
 interface UserInterface {
     userId: string;
@@ -19,12 +39,18 @@ interface RoomInterface {
 const rooms: RoomInterface[] = [];
 const users: UserInterface[] = [];
 
+server.listen(PORT, ()=>{
+    console.log(`WebSocket server running on port ${PORT}`);
+})
+
 wss.on('connection', (ws, req) => {
     const url = new URL(req.url!, "http://localhost:");
 
     const token = req.headers["sec-websocket-protocol"];
     const boardId = url.searchParams.get("boardId");
     const JWT_SECRET = process.env.JWT_SECRET;
+
+    console.log("user joined")
 
     
 
