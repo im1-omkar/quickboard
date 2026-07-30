@@ -18,6 +18,8 @@ import { handleSync } from '@/lib/api';
 import { makeWebSocketConnection, sendCurrentState } from '@/lib/websocket';
 import { Spinner } from '@/components/ui/spinner';
 
+const HTTP_URL = process.env.NEXT_PUBLIC_HTTP_URL;
+
 const isPointInElement = (x: number, y: number, element: CanvasElement) => {
   if (element.type === 'rectangle' || element.type === 'circle') {
     const minX = Math.min(element.x, element.x + element.width);
@@ -70,7 +72,7 @@ const Board = () => {
 
   useEffect(() => {
     const fetchIntiialBoard = async () => {
-      const response = await axios.get(`http://localhost:3000/api/boards/${params.id}`, {
+      const response = await axios.get(`${HTTP_URL}/api/boards/${params.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }

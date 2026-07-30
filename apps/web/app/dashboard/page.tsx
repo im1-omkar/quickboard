@@ -8,6 +8,9 @@ import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation'
 import { useState } from 'react';
 
+const HTTP_URL = process.env.NEXT_PUBLIC_HTTP_URL;
+
+
 interface Board {
   "id": string,
   "title": string,
@@ -41,7 +44,7 @@ const Dashboard = () => {
     queryFn: async (): Promise<Board[] | null> => {
       try {
         // Pass the Board[] type to axios so response.data is strongly typed
-        const response = await axios.get<Board[]>(`http://localhost:3000/api/boards`, {
+        const response = await axios.get<Board[]>(`${HTTP_URL}/api/boards`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
